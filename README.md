@@ -5,7 +5,7 @@ Validates GoCD pipelines.
 
 ## Example Usage
 
-ops will need to add your repo to `github_actions_allowed_repos` - open an ops request for this.
+ops will need to authorize access to your repo for `gha-gocd-api` in security-as-code - open an ops request for this.
 
 ```yaml
 jobs:
@@ -19,9 +19,16 @@ jobs:
             id-token: "write"
 
         steps:
-            - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-            - uses: ./.github/actions/validate-gocd-pipelines
+            - id: 'auth'
+              uses: google-github-actions/auth@v1
+              with:
+                workload_identity_provider: 'projects/868781662168/locations/global/workloadIdentityPools/prod-github/providers/github-oidc-pool'
+                service_account: 'gha-gocd-api@sac-prod-sa.iam.gserviceaccount.com'
+                token_format: 'access_token'
+            - uses: actions/checkout@v3
+            - uses: getsentry/action-validate-gocd-pipelines@v1
               with:
                 configrepo: getsentry__master
                 gocd_access_token: ${{ secrets.GOCD_ACCESS_TOKEN }}
+                google_oidc_token: ${{ steps.auth.outputs.access_token }}
 ```
