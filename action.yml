@@ -1,0 +1,20 @@
+name: Validate GoCD Pipelines
+description: Validates gocd pipelines
+inputs:
+  configrepo:
+    description: 'The name of the config repo. Our format is usually {repo}__{branch} (e.g. getsentry__master)'
+    required: true
+  gocd_access_token:
+    required: true
+  google_oidc_token:
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: validate
+      name: validate
+      shell: bash
+      env:
+        GOCD_ACCESS_TOKEN: ${{ inputs.gocd_access_token }}
+        GOOGLE_OIDC_TOKEN: ${{ inputs.google_oidc_token }}
+      run: python3 -uS ${{ github.action_path }}/bin/validate-pipelines ${{ inputs.configrepo }}

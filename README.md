@@ -19,13 +19,15 @@ jobs:
             id-token: "write"
 
         steps:
+            - uses: actions/checkout@v3
             - id: 'auth'
               uses: google-github-actions/auth@v1
               with:
                 workload_identity_provider: 'projects/868781662168/locations/global/workloadIdentityPools/prod-github/providers/github-oidc-pool'
                 service_account: 'gha-gocd-api@sac-prod-sa.iam.gserviceaccount.com'
-                token_format: 'access_token'
-            - uses: actions/checkout@v3
+                token_format: 'id_token'
+                id_token_audience: '610575311308-9bsjtgqg4jm01mt058rncpopujgk3627.apps.googleusercontent.com'
+                id_token_include_email: true
             - uses: getsentry/action-validate-gocd-pipelines@v1
               with:
                 configrepo: getsentry__master

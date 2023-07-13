@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import os
+import subprocess
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("configrepo")
+    args = parser.parse_args()
+
+    GOCD_ACCESS_TOKEN = os.environ.get("GOCD_ACCESS_TOKEN")
+    if not GOCD_ACCESS_TOKEN:
+        print("GOCD_ACCESS_TOKEN not set.")
+        return 1
+
+    # This is used to auth with IAP.
+    # To get the access_token: https://cloud.google.com/blog/products/identity-security/enabling-keyless-authentication-from-github-actions
+    GOOGLE_OIDC_TOKEN = os.environ.get("GOOGLE_OIDC_TOKEN")
+    if not GOOGLE_OIDC_TOKEN:
+        print("GOOGLE_OIDC_TOKEN not set.")
+        return 1
+
+    yamls = glob.glob("gocd/**/*.yaml")
+    if not yamls:
+        print("No gocd pipelines found.")
+        return 1
+
+    cmd = [
+        "curl",
+        "--fail-with-body",
+        f"https://deploy.getsentry.net/go/api/admin/config_repo_ops/preflight?pluginId=yaml.config.plugin&repoId={args.configrepo}",
+        "-H",
+        "Accept: application/vnd.go.cd.v1+json",
+        "-H",
+        f"Authorization: bearer {GOCD_ACCESS_TOKEN}",
+        "-H",
+        f"Proxy-Authorization: Bearer {GOOGLE_OIDC_TOKEN}",
+    ]
+    for fp in yamls:
+        cmd.extend(("-F", f"files[]=@{fp}"))
+
+    proc = subprocess.run(cmd, capture_output=True)
+    if proc.returncode != 0:
+        print(
+            f"failed to run {' '.join(cmd)}\n\nstdout:\n{proc.stdout}\n\nstderr:\n{proc.stderr}\n\n"
+        )
+        return proc.returncode
+
+    data = json.loads(proc.stdout)
+
+    if not data["valid"]:
+        print(data["errors"])
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
