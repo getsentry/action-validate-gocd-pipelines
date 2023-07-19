@@ -45,6 +45,8 @@ def main() -> int:
     for fp in yamls:
         cmd.extend(("-F", f"files[]=@{fp}"))
 
+    print(f"Curling: {' '.join(cmd)}\n\n")
+
     proc = subprocess.run(cmd, capture_output=True)
     if proc.returncode != 0:
         print(
