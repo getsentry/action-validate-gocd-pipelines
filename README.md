@@ -2,10 +2,11 @@
 
 Validates GoCD pipelines.
 
+To use this in a new repository you'll need to add it to `gha-gocd-api` in security-as-code.
+Open a PR like [this](https://github.com/getsentry/security-as-code/pull/286) one.
+
 
 ## Example Usage
-
-ops will need to authorize access to your repo for `gha-gocd-api` in security-as-code - open an ops request for this.
 
 ```yaml
 jobs:
