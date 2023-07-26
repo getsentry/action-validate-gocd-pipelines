@@ -8,7 +8,7 @@ import os
 import subprocess
 
 
-def curl_file(config_repo:str, fp: str) -> None:
+def curl_file(config_repo:str, fp: str, gocd_token: str, google_oicd_token: str) -> None:
     cmd = [
         "curl",
         "-sSL",
@@ -17,9 +17,9 @@ def curl_file(config_repo:str, fp: str) -> None:
         "-H",
         "Accept: application/vnd.go.cd.v1+json",
         "-H",
-        f"Authorization: bearer {GOCD_ACCESS_TOKEN}",
+        f"Authorization: bearer {gocd_token}",
         "-H",
-        f"Proxy-Authorization: Bearer {GOOGLE_OIDC_TOKEN}",
+        f"Proxy-Authorization: Bearer {google_oicd_token}",
     ]
     cmd.extend(("-F", f"files[]=@{fp}"))
     print(f"Curling: {' '.join(cmd)}\n\n")
@@ -57,7 +57,7 @@ def main() -> int:
 
     fail = False
     for fp in yamls:
-        data = curl_file(args.configrepo, fp)
+        data = curl_file(args.configrepo, fp, GOCD_ACCESS_TOKEN, GOOGLE_OIDC_TOKEN)
         if not data["valid"]:
             fail = True
             print(data["errors"])
