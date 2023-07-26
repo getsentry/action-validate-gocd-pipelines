@@ -8,12 +8,12 @@ import os
 import subprocess
 
 
-def curl_file(fp: str) -> None:
+def curl_file(config_repo:str, fp: str) -> None:
     cmd = [
         "curl",
         "-sSL",
         "--fail-with-body",
-        f"https://deploy.getsentry.net/go/api/admin/config_repo_ops/preflight?pluginId=yaml.config.plugin&repoId={args.configrepo}",
+        f"https://deploy.getsentry.net/go/api/admin/config_repo_ops/preflight?pluginId=yaml.config.plugin&repoId={config_repo}",
         "-H",
         "Accept: application/vnd.go.cd.v1+json",
         "-H",
@@ -57,7 +57,7 @@ def main() -> int:
 
     fail = False
     for fp in yamls:
-        data = curl_file(fp)
+        data = curl_file(args.configrepo, fp)
         if not data["valid"]:
             fail = True
             print(data["errors"])
